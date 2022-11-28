@@ -107,6 +107,7 @@ spec:
           {{- if .Values.snuba.outcomesConsumer.noStrictOffsetReset }}
           - "--no-strict-offset-reset"
           {{- end }}
+          - "--consumer-group=outcomes-group"
         ports:
         - containerPort: {{ template "snuba.port" }}
         env:

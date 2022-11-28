@@ -9,13 +9,14 @@ metadata:
     {{- if and (.Values.ingress.enabled) (eq (default "nginx" .Values.ingress.regexPathStyle) "gke") }}
       cloud.google.com/backend-config: '{"ports": {"{{ template "relay.port" . }}":"{{ include "sentry.fullname" . }}-relay"}}'
     {{- end }}
+    service.beta.kubernetes.io/loadbalancer-uuid: "{{ .Values.relay.uuid }}"
   labels:
     app: {{ template "sentry.fullname" . }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     release: "{{ .Release.Name }}"
     heritage: "{{ .Release.Service }}"
 spec:
-  type: {{ .Values.service.type }}
+  type: LoadBalancer
   ports:
   - port: {{ template "relay.port" . }}
     targetPort: {{ template "relay.port" }}

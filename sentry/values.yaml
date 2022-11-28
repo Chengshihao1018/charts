@@ -2,8 +2,8 @@ prefix:
 
 user:
   create: true
-  email: admin@sentry.local
-  password: aaaa
+  email: misentry
+  password: Sentry@123
 
   ## set this value to an existingSecret name to create the admin user with the password in the secret
   # existingSecret: sentry-admin-password
@@ -19,23 +19,23 @@ asHook: true
 
 images:
   sentry:
-    # repository: getsentry/sentry
-    # tag: Chart.AppVersion
-    # pullPolicy: IfNotPresent
+    repository: cr.d.xiaomi.net/unitedsentry/sentry
+    tag: v22.10.0-test
+    pullPolicy: Always
     imagePullSecrets: []
   snuba:
-    # repository: getsentry/snuba
-    # tag: Chart.AppVersion
-    # pullPolicy: IfNotPresent
+    repository: cr.d.xiaomi.net/unitedsentry/snuba
+    tag: 22.10.0
+    #pullPolicy: IfNotPresent
     imagePullSecrets: []
   relay:
-    # repository: getsentry/relay
-    # tag: Chart.AppVersion
-    # pullPolicy: IfNotPresent
+    repository: cr.d.xiaomi.net/unitedsentry/relay
+    tag: 22.10.0
+    #pullPolicy: IfNotPresent
     imagePullSecrets: []
   symbolicator:
-    # repository: getsentry/symbolicator
-    tag: 0.5.1
+    repository: cr.d.xiaomi.net/unitedsentry/symbolicator
+    tag: 0.2.0
     # pullPolicy: IfNotPresent
     imagePullSecrets: []
 
@@ -51,21 +51,33 @@ serviceAccount:
 
 relay:
   replicas: 1
+  uuid: 9783dbed-23ce-4514-a9b5-72d4d7e6cb60
   # args: []
-  mode: managed
+  # mode: managed
   env: []
   probeFailureThreshold: 5
   probeInitialDelaySeconds: 10
   probePeriodSeconds: 10
   probeSuccessThreshold: 1
   probeTimeoutSeconds: 2
-  resources: {}
+  resources: 
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
   affinity: {}
-  nodeSelector: {}
+  nodeSelector:
+    dedicated: sentry
   securityContext: {}
   service:
     annotations: {}
-  # tolerations: []
+  tolerations: 
+    - key: "dedicated"
+      operator: "Equal"
+      value: "sentry"
+      effect: "NoSchedule"
   # podLabels: []
 
   autoscaling:
@@ -92,7 +104,10 @@ sentry:
   # to not generate a sentry-secret, use these 2 values to reference an existing secret
   # existingSecret: "my-secret"
   # existingSecretKey: "my-secret-key"
-  singleOrganization: true
+  uuid: e166b9f0-9a14-43ab-8ca2-336f1cb8996a
+  singleOrganization: False
+  publicEndpoint: https://staging-sentry.d.xiaomi.net
+  Endpoint: https://staging-sentry.d.xiaomi.net
   web:
     # if using filestore backend filesystem with RWO access, set strategyType to Recreate
     strategyType: RollingUpdate
@@ -103,13 +118,24 @@ sentry:
     probePeriodSeconds: 10
     probeSuccessThreshold: 1
     probeTimeoutSeconds: 2
-    resources: {}
+    resources: 
+      limits:
+        cpu: 1500m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
     service:
       annotations: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     # Mount and use custom CA
     # customCA:
@@ -133,10 +159,21 @@ sentry:
     replicas: 3
     # concurrency: 4
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 3000m
+        memory: 8Gi
+      requests:
+        cpu: 1000m
+        memory: 2Gi
     affinity: {}
-    nodeSelector: {}
-    # tolerations: []
+    nodeSelector: 
+      dedicated: sentry
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
 
     # it's better to use prometheus adapter and scale based on
@@ -159,11 +196,22 @@ sentry:
     replicas: 1
     # concurrency: 4
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     # maxBatchSize: ""
 
@@ -184,10 +232,21 @@ sentry:
   cron:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 100m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
-    # tolerations: []
+    nodeSelector:
+      dedicated: sentry
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     sidecars: []
     volumes: []
@@ -196,11 +255,22 @@ sentry:
   subscriptionConsumerEvents:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 100m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     # commitBatchSize: 1
     sidecars: []
@@ -213,9 +283,14 @@ sentry:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     # commitBatchSize: 1
     sidecars: []
@@ -226,11 +301,22 @@ sentry:
   postProcessForwardErrors:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     # commitBatchSize: 1
     sidecars: []
@@ -240,11 +326,22 @@ sentry:
   postProcessForwardTransactions:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 1000m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
     # commitBatchSize: 1
     sidecars: []
@@ -258,12 +355,26 @@ sentry:
     concurrencyPolicy: Allow
     enabled: true
     schedule: "0 0 * * *"
-    days: 90
+    days: 7
     # securityContext: {}
     sidecars: []
     volumes: []
     # volumeMounts: []
     serviceAccount: {}
+    nodeSelector:
+      dedicated: sentry
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
 snuba:
   api:
@@ -279,13 +390,24 @@ snuba:
       timeoutSeconds: 2
     readiness:
       timeoutSeconds: 2
-    resources: {}
+    resources: 
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
     service:
       annotations: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
 
     autoscaling:
@@ -300,13 +422,24 @@ snuba:
   consumer:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     # noStrictOffsetReset: false
     # maxBatchSize: ""
     # processes: ""
@@ -327,13 +460,24 @@ snuba:
   outcomesConsumer:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     # noStrictOffsetReset: false
     maxBatchSize: "3"
     # processes: ""
@@ -354,13 +498,24 @@ snuba:
   replacer:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 100m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     maxBatchSize: "3"
     # maxBatchTimeMs: ""
     # queuedMaxMessagesKbytes: ""
@@ -373,11 +528,16 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     # volumes: []
     # volumeMounts: []
 
@@ -386,24 +546,40 @@ snuba:
     env: []
     resources: {}
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     # volumes: []
     # volumeMounts: []
 
   sessionsConsumer:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 100m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations: 
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     # noStrictOffsetReset: false
     # maxBatchSize: ""
     # processes: ""
@@ -424,13 +600,24 @@ snuba:
   transactionsConsumer:
     replicas: 1
     env: []
-    resources: {}
+    resources: 
+      limits:
+        cpu: 800m
+        memory: 1Gi
+      requests:
+        cpu: 200m
+        memory: 1Gi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector: 
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule" 
     # podLabels: []
-    autoOffsetReset: "earliest"
+    autoOffsetReset: "latest"
     # noStrictOffsetReset: false
     # maxBatchSize: ""
     # processes: ""
@@ -466,6 +653,20 @@ snuba:
     serviceAccount: {}
     # volumes: []
     # volumeMounts: []
+    nodeSelector:
+      dedicated: sentry
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
   cleanupTransactions:
     successfulJobsHistoryLimit: 5
@@ -480,6 +681,20 @@ snuba:
     serviceAccount: {}
     # volumes: []
     # volumeMounts: []
+    nodeSelector:
+      dedicated: sentry
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
 hooks:
   enabled: true
@@ -488,7 +703,7 @@ hooks:
   shareProcessNamespace: false
   dbCheck:
     image:
-      # repository: subfuzion/netcat
+      repository: micr.cloud.mioffice.cn/unitedsentry/subfuzion/netcat
       # tag: latest
       # pullPolicy: IfNotPresent
       imagePullSecrets: []
@@ -502,9 +717,14 @@ hooks:
         cpu: 100m
         memory: 64Mi
     affinity: {}
-    nodeSelector: {}
+    nodeSelector:
+      dedicated: sentry
     securityContext: {}
-    # tolerations: []
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # volumes: []
     # volumeMounts: []
   dbInit:
@@ -520,8 +740,13 @@ hooks:
     sidecars: []
     volumes: []
     affinity: {}
-    nodeSelector: {}
-    # tolerations: []
+    nodeSelector:
+      dedicated: sentry
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # volumes: []
     # volumeMounts: []
   snubaInit:
@@ -535,8 +760,13 @@ hooks:
         cpu: 700m
         memory: 1Gi
     affinity: {}
-    nodeSelector: {}
-    # tolerations: []
+    nodeSelector:
+      dedicated: sentry
+    tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "sentry"
+        effect: "NoSchedule"
     # volumes: []
     # volumeMounts: []
   snubaMigrate: {}
@@ -546,7 +776,7 @@ hooks:
 
 system:
   ## be sure to include the scheme on the url, for example: "https://sentry.example.com"
-  url: ""
+  url: "https://staging-sentry.pt.xiaomi.com"
   adminEmail: ""
   ## This should only be used if you’re installing Sentry behind your company’s firewall.
   public: false
@@ -555,7 +785,7 @@ system:
 
 mail:
   # For example: smtp
-  backend: dummy
+  backend: smtp
   useTls: false
   useSsl: false
   username: ""
@@ -564,8 +794,8 @@ mail:
   ## set existingSecretKey if key name inside existingSecret is different from 'mail-password'
   # existingSecretKey: secret-key-name
   port: 25
-  host: ""
-  from: ""
+  host: "mail.b2c.srv"
+  from: "aew8BolDuQ@xiaomi.com"
 
 symbolicator:
   enabled: false
@@ -656,7 +886,7 @@ slack: {}
 #   Reference -> https://develop.sentry.dev/integrations/slack/
 
 nginx:
-  enabled: true
+  enabled: false
   containerPort: 8080
   existingServerBlockConfigmap: '{{ template "sentry.fullname" . }}'
   resources: {}
@@ -693,7 +923,7 @@ ingress:
 
 filestore:
   # Set to one of filesystem, gcs or s3 as supported by Sentry.
-  backend: filesystem
+  backend: s3
 
   filesystem:
     path: /var/lib/sentry/files
@@ -710,9 +940,9 @@ filestore:
       ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
       ##   GKE, AWS & OpenStack)
       ##
-      # storageClass: "-"
+      storageClass: ceph-storageclass-c4-cc
       accessMode: ReadWriteOnce
-      size: 10Gi
+      size: 100Gi
 
       ## Whether to mount the persistent volume to the Sentry worker and
       ## cron deployments. This setting needs to be enabled for some advanced
@@ -736,7 +966,12 @@ filestore:
   # bucketName:
 
   ## Currently unconfigured and changing this has no impact on the template configuration.
-  s3: {}
+  s3: {
+    accessKey: "AKWF4354EUJ2D7X3YX",
+    secretKey: "CxVP8kepbsLfOXS+18SCRnhcbYM0Pv3avfNBlmLk",
+    bucketName: "sentry-backup",
+    endpointUrl: "https://s3-cnbj3-fusion.mi-fds.net"
+  }
   #  accessKey:
   #  secretKey:
   #  bucketName:
@@ -758,7 +993,7 @@ config:
     httpKeepalive: 15
 
 clickhouse:
-  enabled: true
+  enabled: false
   clickhouse:
     imageVersion: "20.8.19.4"
     configmap:
@@ -805,12 +1040,12 @@ clickhouse:
 externalClickhouse:
   ## Hostname or ip address of external clickhouse
   ##
-  host: "clickhouse"
+  host: "tj1-falcon-staging-tran02.kscn"
   tcpPort: 9000
   httpPort: 8123
-  username: default
-  password: ""
-  database: default
+  username: sentry_user
+  password: K6/cWVQm
+  database: sentry_local2
   singleNode: true
   # existingSecret: secret-name
   ## set existingSecretKey if key name inside existingSecret is different from 'postgres-password'
@@ -819,12 +1054,12 @@ externalClickhouse:
   ## (https://clickhouse.tech/docs/en/operations/server-configuration-parameters/settings/#server-settings-remote-servers)
   ## or by executing `select * from system.clusters`
   ##
-  # clusterName: test_shard_localhost
+  clusterName: local_cluster
 
 # Settings for Zookeeper.
 # See https://github.com/bitnami/charts/tree/master/bitnami/zookeeper
 zookeeper:
-  enabled: true
+  enabled: false
   nameOverride: zookeeper-clickhouse
   replicaCount: 3
 
@@ -870,7 +1105,7 @@ sourcemaps:
   enabled: false
 
 redis:
-  enabled: true
+  enabled: false
   auth:
     enabled: false
     sentinel: false
@@ -891,13 +1126,13 @@ redis:
 externalRedis:
   ## Hostname or ip address of external redis cluster
   ##
-  # host: "redis"
+  host: "10.38.167.41"
   port: 6379
   ## Just omit the password field if your redis cluster doesn't use password
-  # password: redis
+  password: 6771ccaa878042c4ba8a6885cccfe287
 
 postgresql:
-  enabled: true
+  enabled: false
   nameOverride: sentry-postgresql
   postgresqlUsername: postgres
   postgresqlDatabase: sentry
@@ -915,19 +1150,19 @@ postgresql:
 ## Set either externalPostgresql.password or externalPostgresql.existingSecret to configure password
 ## externalPostgresql.existingSecret should have a key of 'postgres-password' which holds the password
 externalPostgresql:
-  # host: postgres
-  port: 5432
-  username: postgres
-  # password: postgres
+  host: 10.132.144.104
+  port: 6432
+  username: sentry_db_wr
+  password: gXjRVkcRHfKYMFfr5bu2GcX5rUXFmfRy
   # existingSecret: secret-name
   ## set existingSecretKey if key name inside existingSecret is different from 'postgres-password'
   # existingSecretKey: secret-key-name
-  database: sentry
+  database: sentry_db
   # sslMode: require
 
 rabbitmq:
   ## If disabled, Redis will be used instead as the broker.
-  enabled: true
+  enabled: false
   vhost: /
   clustering:
     forceBoot: true
@@ -1010,7 +1245,7 @@ memcached:
 ## Prometheus Exporter / Metrics
 ##
 metrics:
-  enabled: false
+  enabled: true
 
   ## Configure extra options for liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
@@ -1031,16 +1266,21 @@ metrics:
 
   ## Metrics exporter resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-  resources: {}
-  #   limits:
-  #     cpu: 100m
-  #     memory: 100Mi
-  #   requests:
-  #     cpu: 100m
-  #     memory: 100Mi
+  resources: 
+    limits:
+      cpu: 500m
+      memory: 1000Mi
+    requests:
+      cpu: 500m
+      memory: 500Mi
 
-  nodeSelector: {}
-  tolerations: []
+  nodeSelector: 
+    dedicated: sentry
+  tolerations: 
+    - key: "dedicated"
+      operator: "Equal"
+      value: "sentry"
+      effect: "NoSchedule"
   affinity: {}
   securityContext: {}
   # schedulerName:
@@ -1051,7 +1291,7 @@ metrics:
     labels: {}
 
   image:
-    repository: prom/statsd-exporter
+    repository: cr.d.xiaomi.net/unitedsentry/statsd-exporter
     tag: v0.17.0
     pullPolicy: IfNotPresent
 
@@ -1070,7 +1310,7 @@ metrics:
 
 revisionHistoryLimit: 10
 
-# dnsPolicy: "ClusterFirst"
+dnsPolicy: "ClusterFirst"
 # dnsConfig:
 #   nameservers: []
 #   searches: []

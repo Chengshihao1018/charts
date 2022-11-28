@@ -15,6 +15,7 @@ data:
     {{- if .Values.system.adminEmail }}
     system.admin-email: {{ .Values.system.adminEmail | quote }}
     {{- end }}
+    system.secret-key: {{ .Values.system.secretKey | default (randAlphaNum 50) | quote }}
     {{- if .Values.system.url }}
     system.url-prefix: {{ .Values.system.url | quote }}
     {{- end }}
@@ -151,7 +152,7 @@ data:
             "ENGINE": "sentry.db.postgres",
             "NAME": {{ include "sentry.postgresql.database" . | quote }},
             "USER": {{ include "sentry.postgresql.username" . | quote }},
-            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "{{ include "sentry.postgresql.password" . }}"),
             "HOST": {{ include "sentry.postgresql.host" . | quote }},
             "PORT": {{ template "sentry.postgresql.port" . }},
             {{- if .Values.externalPostgresql.sslMode }}
@@ -173,7 +174,18 @@ data:
     ###########
     # General #
     ###########
-
+    SENTRY_PUBLIC_ENDPOINT = "{{ .Values.sentry.publicEndpoint }}"
+    SENTRY_ENDPOINT = "{{ .Values.sentry.Endpoint }}"
+    LOGGING['default_level'] = 'DEBUG'
+    SENTRY_DEFAULT_TIME_ZONE = "Asia/Singapore"
+    ACCESSKEY_ID = "AKVZGVSLEZ35QDDPCH"
+    SECRETKEY_ID = "YJwiDTilU6KBAhKwkBBpixiWxdMW82ZEGfmNjble"
+    CONST_EMAIL = "@xiaomi.com"
+    CONST_RATELIMIT = {"count":"240000","window":60}
+    CONST_ORGANIZATION = "unitedsentry"
+    CONST_ADMIN = "misentry"
+    CONST_ORGANIZATION_SLUG = "unitedsentry"
+    CONST_ADMIN_EMAIL = "misentry@xiaomi.com"
 
     secret_key = env('SENTRY_SECRET_KEY')
     if not secret_key:
@@ -446,7 +458,7 @@ data:
     SENTRY_OPTIONS['mail.use-tls'] = bool(strtobool(os.getenv("SENTRY_EMAIL_USE_TLS", {{ .Values.mail.useTls | quote }})))
     SENTRY_OPTIONS['mail.use-ssl'] = bool(strtobool(os.getenv("SENTRY_EMAIL_USE_SSL", {{ .Values.mail.useSsl | quote }})))
     SENTRY_OPTIONS['mail.username'] = os.getenv("SENTRY_EMAIL_USERNAME", {{ .Values.mail.username | quote }})
-    SENTRY_OPTIONS['mail.password'] = os.getenv("SENTRY_EMAIL_PASSWORD", "")
+    SENTRY_OPTIONS['mail.password'] = os.getenv("SENTRY_EMAIL_PASSWORD", "{{ .Values.mail.password }}")
     SENTRY_OPTIONS['mail.port'] = int(os.getenv("SENTRY_EMAIL_PORT", {{ .Values.mail.port | quote }}))
     SENTRY_OPTIONS['mail.host'] = os.getenv("SENTRY_EMAIL_HOST", {{ .Values.mail.host | quote }})
     SENTRY_OPTIONS['mail.from'] = os.getenv("SENTRY_EMAIL_FROM", {{ .Values.mail.from | quote }})

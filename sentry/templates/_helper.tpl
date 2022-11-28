@@ -232,6 +232,17 @@ Set postgresql username
 {{- end -}}
 
 {{/*
+  Set postgresql password
+  */}}
+  {{- define "sentry.postgresql.password" -}}
+  {{- if .Values.postgresql.enabled -}}
+  {{- default "" .Values.postgresql.postgresqlPassword }}
+  {{- else -}}
+  {{ required "A valid .Values.externalPostgresql.password is required" .Values.externalPostgresql.password }}
+  {{- end -}}
+  {{- end -}}
+
+{{/*
 Set postgresql database
 */}}
 {{- define "sentry.postgresql.database" -}}

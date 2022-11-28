@@ -17,15 +17,16 @@ data:
     env = os.environ.get
 
     DEBUG = env("DEBUG", "0").lower() in ("1", "true")
+    LOG_LEVEL = "DEBUG"
 
     # Clickhouse Options
     CLUSTERS = [
       {
         "host": env("CLICKHOUSE_HOST", {{ include "sentry.clickhouse.host" . | quote }}),
-        "port": int({{ include "sentry.clickhouse.port" . }}),
-        "user":  env("CLICKHOUSE_USER", "default"),
-        "password": env("CLICKHOUSE_PASSWORD", ""),
-        "database": env("CLICKHOUSE_DATABASE", "default"),
+        "port": int(env("CLICKHOUSE_PORT", {{ include "sentry.clickhouse.port" . }})),
+        "user":  env("CLICKHOUSE_USER", "sentry_user"),
+        "password": env("CLICKHOUSE_PASSWORD", "K6/cWVQm"),
+        "database": env("CLICKHOUSE_DATABASE", "sentry_local2"),
         "http_port": {{ include "sentry.clickhouse.http_port" . }},
         "storage_sets": {
             "cdc",
@@ -53,7 +54,7 @@ data:
           clickhouse configured can be configured any way you choose
         */}}
         {{- if and .Values.externalClickhouse.singleNode (not .Values.clickhouse.enabled) }}
-        "single_node": True,
+        "single_node": env("CLICKHOUSE_SINGLE_NODE", "true").lower() == "true",
         {{- else }}
         "single_node": False,
         {{- end }}
@@ -71,6 +72,9 @@ data:
     REDIS_PASSWORD = {{ $redisPass | quote }}
     {{- end }}
     REDIS_DB = int(env("REDIS_DB", 1))
+
+    # Processor/Writer Options
+    DEFAULT_BROKERS = [{{ printf "%s:%s" (include "sentry.kafka.host" .) (include "sentry.kafka.port" .) | quote }}]
 
 {{- if .Values.metrics.enabled }}
     DOGSTATSD_HOST = "{{ template "sentry.fullname" . }}-metrics"
