@@ -798,7 +798,7 @@ mail:
   from: "aew8BolDuQ@xiaomi.com"
 
 symbolicator:
-  enabled: false
+  enabled: true
   api:
     replicas: 1
     env: []
